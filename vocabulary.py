@@ -2,6 +2,8 @@ from collections import defaultdict
 import logging
 import unicodedata
 import re
+import itertools
+import torch
 
 # Default word tokens
 PAD_token = 0  # Used for padding short sentences
@@ -196,3 +198,91 @@ def load_prepare_data(corpus, corpus_name, datafile, save_dir):
     pairs = voc.trim_rare_words(pairs)
 
     return voc, pairs
+
+
+def indexes_from_sentence(voc, sentence):
+    """
+    Convert all words in a sentence to its index value in the Vocabulary
+    :param voc: Vocabulary
+    :param sentence: str
+    :return:
+    """
+    return [voc.word_to_index[word] for word in sentence.split(" ")] + [EOS_token]
+
+
+def zero_padding(indexes_batch, fill_value=PAD_token):
+    """
+    Zero pad all sentences who is shorter than the longest sentence.
+    A batch consists of several sentences which are converted to indexes.
+    :param indexes_batch: list[list[int]]
+    :param fill_value: int
+    :return: list[list[int]]
+    """
+    return list(itertools.zip_longest(*indexes_batch, fillvalue=fill_value))
+
+
+def binary_matrix(padded_sentences, value=PAD_token):
+    """
+    Convert the padded sentences into a binary matrix where it is 0 if it is equal value,
+    and 1 else.
+    :param padded_sentences: list[list[int]]
+    :param value: int
+    :return: list[list[int]]
+    """
+    return [[int(token != value) for token in seq] for seq in padded_sentences]
+
+
+def input_var(sentences, voc):
+    """
+    Returns padded input sequence tensor and lengths
+    :param sentences: list[str]
+    :param voc: Vocabulary
+    :return: LongTensor, Tensor
+    """
+    # Convert each sentence to index tokens
+    indexes_batch = [indexes_from_sentence(voc, sentence) for sentence in sentences]
+
+    # Find the length of each sentence
+    lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
+
+    # Add zero padding to sentences
+    pad_list = zero_padding(indexes_batch)
+    pad_var = torch.LongTensor(pad_list)
+    return pad_var, lengths
+
+
+def output_var(sentences, voc):
+    """
+    Returns padded target sequence tensor, padding mask, and max target length
+    :param sentences: list[str]
+    :param voc: Vocabulary
+    :return:
+    """
+    # Convert each sentnce to index tokens
+    indexes_batch = [indexes_from_sentence(voc, sentence) for sentence in sentences]
+    max_target_len = max([len(indexes) for indexes in indexes_batch])
+
+    # Zero pad each sentence
+    pad_list = zero_padding(indexes_batch)
+
+    mask = binary_matrix(pad_list)
+    mask = torch.BoolTensor(mask)
+    pad_var = torch.LongTensor(pad_list)
+    return pad_var, mask, max_target_len
+
+
+def batch_to_training_data(voc, pair_batch):
+    """
+    Returns all items for a given batch of pairs
+    :param voc: Vocabulary
+    :param pair_batch: list[list[str]]
+    :return: input, lengths, output, mask, max_target_len
+    """
+    pair_batch.sort(key=lambda x: len(x[0].split(" ")), reverse=True)
+    input_batch, output_batch = [], []
+    for pair in pair_batch:
+        input_batch.append(pair[0])
+        output_batch.append(pair[1])
+    inp, lengths = input_var(input_batch, voc)
+    output, mask, max_target_len = output_var(output_batch, voc)
+    return inp, lengths, output, mask, max_target_len

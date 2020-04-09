@@ -6,12 +6,13 @@ from __future__ import unicode_literals
 import torch
 import os
 import logging
+import random
 
 # Custom
 from data import create_formatted_file
 from utils import init_logger
 from data import CORPUS, CORPUS_NAME
-from vocabulary import load_prepare_data
+from vocabulary import load_prepare_data, batch_to_training_data
 
 USE_CUDA = torch.cuda.is_available()
 device = torch.device("cuda" if USE_CUDA else "cpu")
@@ -30,7 +31,7 @@ if __name__ == '__main__':
     save_dir = os.path.join("data", "save")
     voc, pairs = load_prepare_data(CORPUS, CORPUS_NAME, datafile, save_dir)
 
-    # Print some paris to validate
-    logging.info("Some QA-pairs:")
-    for pair in pairs[:10]:
-        logging.info("\t {}".format(pair))
+    # Get training data example
+    small_batch_size = 5
+    batches = batch_to_training_data(voc, [random.choice(pairs) for _ in range(small_batch_size)])
+    input_variable, lengths, target_variable, mask, max_target_len = batches
