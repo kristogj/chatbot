@@ -58,7 +58,7 @@ if __name__ == '__main__':
     decoder.eval()
 
     # Initialize search module
-    searcher = GreedySearchDecoder(encoder, decoder)
+    searcher = GreedySearchDecoder(encoder, decoder, config["device"])
 
     # Start chat
     evaluate_input(searcher, voc, config)

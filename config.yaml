@@ -45,4 +45,4 @@ save_every: 500
 max_length: 10
 
 # Minimum word count threshold for trimming
-min_count = 3
+min_count:  3

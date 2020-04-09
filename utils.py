@@ -28,7 +28,7 @@ def get_device():
 
 def load_config(path):
     """
-    Load the configuration from task_2_table.yaml.
+    Load the configuration from config.yaml
     """
     return yaml.load(open(path, 'r'), Loader=yaml.SafeLoader)
 

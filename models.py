@@ -3,7 +3,6 @@ from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 import torch
 import torch.nn.functional as F
 
-from utils import get_device
 from vocabulary import SOS_token
 
 
@@ -169,13 +168,13 @@ class GreedySearchDecoder(nn.Module):
     6. Return collections of word tokens and scores.
     """
 
-    def __init__(self, encoder, decoder):
+    def __init__(self, encoder, decoder, device):
         super(GreedySearchDecoder, self).__init__()
         self.encoder = encoder
         self.decoder = decoder
+        self.device = device
 
     def forward(self, input_seq, input_length, max_length):
-        device = get_device()
         # Forward input through encoder model
         encoder_outputs, encoder_hidden = self.encoder(input_seq, input_length)
 
@@ -183,11 +182,11 @@ class GreedySearchDecoder(nn.Module):
         decoder_hidden = encoder_hidden[:self.decoder.n_layers]
 
         # Initialize decoder input with SOS_token
-        decoder_input = torch.ones(1, 1, device=device, dtype=torch.long) * SOS_token
+        decoder_input = torch.ones(1, 1, device=self.device, dtype=torch.long) * SOS_token
 
         # Initialize tensors to append decoded words to
-        all_tokens = torch.zeros([0], device=device, dtype=torch.long)
-        all_scores = torch.zeros([0], device=device)
+        all_tokens = torch.zeros([0], device=self.device, dtype=torch.long)
+        all_scores = torch.zeros([0], device=self.device)
 
         # Iteratively decode one word token at a time
         for _ in range(max_length):
