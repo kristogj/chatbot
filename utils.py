@@ -1,5 +1,5 @@
 import logging
-
+import torch
 
 def init_logger():
     """
@@ -12,3 +12,10 @@ def init_logger():
             logging.FileHandler("app.log", mode="w"),
             logging.StreamHandler()
         ])
+
+
+def get_device():
+    if torch.cuda.is_available():
+        return torch.device("cuda")
+    else:
+        return torch.device("cpu")
