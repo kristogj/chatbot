@@ -5,7 +5,7 @@ model_name: 'cb_model'
 corpus_name: "cornell movie-dialogs corpus"
 
 # Which score to use in the attention for the decoder
-attn_model: 'dot' # or general or concat
+attn_model: 'dot' # general or concat
 
 # Size of the hidden layer for both encoder and decoder
 hidden_size: 500
@@ -25,24 +25,29 @@ batch_size: 64
 # Set checkpoint to load from; set to None if starting from scratch
 checkpoint_iter: 4000
 
-
+# Clip gradients
 clip: 50.0
 
+# What is the probability for doing teacher forcing
 teacher_forcing_ratio: 1.0
 
+# Learning rate encoder
 learning_rate: 0.0001
 
+# How many times bigger learning rate for decoder than encoder
 decoder_learning_ratio: 5.0
 
-n_iteration: 4000
+# Number of epochs of training
+n_iteration: 400
 
-print_every: 1
+# Print average loss every x epoch
+print_every: 100
 
+# Save model every x epoch
 save_every: 500
 
-# VOCABULARY #
-# Maximum sentence length to consider
+# Maximum sentence length to consider in the vocabulary
 max_length: 10
 
-# Minimum word count threshold for trimming
+# Minimum word count threshold for trimming in the vocabulary
 min_count:  3
