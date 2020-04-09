@@ -97,7 +97,7 @@ def create_formatted_file():
     """
     datafile = os.path.join(CORPUS, "formatted_movie_lines.txt")
 
-    delimiter = "\t"
+    delimiter = "~"
 
     # Unescape the delimiter
     delimiter = str(codecs.decode(delimiter, "unicode_escape"))
