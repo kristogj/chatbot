@@ -1,6 +1,7 @@
 from vocabulary import SOS_token
 from objective import mask_nll_loss
 from vocabulary import batch_to_training_data
+from plotting import generate_plot
 
 import torch
 import torch.nn as nn
@@ -89,10 +90,10 @@ def train_iterations(voc, pairs, encoder, decoder, encoder_optimizer, decoder_op
     training_batches = [batch_to_training_data(voc, [random.choice(pairs) for _ in range(config["batch_size"])])
                         for _ in range(config["n_iteration"])]
 
-    # Init
     logging.info("Initializing")
     start_iteration = 1
     print_loss = 0
+    graph_losses = []
     if checkpoint:
         start_iteration = checkpoint['iteration'] + 1
 
@@ -104,6 +105,7 @@ def train_iterations(voc, pairs, encoder, decoder, encoder_optimizer, decoder_op
         # Run a training iteration with batch
         loss = train(training_batch, encoder, decoder, encoder_optimizer, decoder_optimizer, config)
         print_loss += loss
+        graph_losses.append(loss)
 
         # Print progress
         if iteration % config["print_every"] == 0:
@@ -114,6 +116,7 @@ def train_iterations(voc, pairs, encoder, decoder, encoder_optimizer, decoder_op
 
         # Save checkpoint
         if iteration % config["save_every"] == 0:
+            logging.info("Saving model to file...")
             if not os.path.exists(config["directory"]):
                 os.makedirs(config["directory"])
             torch.save({
@@ -123,6 +126,10 @@ def train_iterations(voc, pairs, encoder, decoder, encoder_optimizer, decoder_op
                 'en_opt': encoder_optimizer.state_dict(),
                 'de_opt': decoder_optimizer.state_dict(),
                 'loss': loss,
-                'voc_dict': voc.__dict__,
+                'voc_dict': voc,  # TODO: Fix saving of vocabulary
                 'embedding': decoder.embedding.state_dict()
             }, os.path.join(config["directory"], '{}_{}.tar'.format(iteration, 'checkpoint')))
+
+    # Plot loss over epochs
+    logging.info("Done. Plotting loss. Say Hi...")
+    generate_plot(graph_losses)

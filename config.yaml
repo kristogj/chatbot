@@ -38,13 +38,13 @@ learning_rate: 0.0001
 decoder_learning_ratio: 5.0
 
 # Number of epochs of training
-n_iteration: 400
+n_iteration: 4000
 
 # Print average loss every x epoch
 print_every: 100
 
 # Save model every x epoch
-save_every: 500
+save_every: 5000
 
 # Maximum sentence length to consider in the vocabulary
 max_length: 10
