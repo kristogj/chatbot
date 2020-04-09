@@ -4,9 +4,6 @@ import codecs
 import logging
 import csv
 
-CORPUS_NAME = "cornell movie-dialogs corpus"
-CORPUS = os.path.join("data", CORPUS_NAME)
-
 
 def log_lines(file, n=10):
     """
@@ -90,12 +87,12 @@ def extract_sentence_pairs(conversations):
     return qa_pairs
 
 
-def create_formatted_file():
+def create_formatted_file(config):
     """
     Create a formatted .csv file of the data.
     :return: None
     """
-    datafile = os.path.join(CORPUS, "formatted_movie_lines.txt")
+    datafile = config["datafile"]
 
     delimiter = "~"
 
@@ -108,15 +105,15 @@ def create_formatted_file():
 
     # Load lines and process conversations
     logging.info("Processing corpus")
-    lines = load_lines(os.path.join(CORPUS, "movie_lines.txt"), MOVIE_LINES_FIELDS)
+    lines = load_lines(os.path.join(config["corpus"], "movie_lines.txt"), MOVIE_LINES_FIELDS)
     logging.info("Loading conversations...")
-    conversations = load_conversations(os.path.join(CORPUS, "movie_conversations.txt"), lines,
+    conversations = load_conversations(os.path.join(config["corpus"], "movie_conversations.txt"), lines,
                                        MOVIE_CONVERSATIONS_FIELDS)
 
     # Write new csv file
     logging.info("Writing newly formatted file...")
-    with open(datafile, 'w', encoding='utf-8') as outputfile:
-        writer = csv.writer(outputfile, delimiter=delimiter, lineterminator='\n')
+    with open(datafile, 'w', encoding='utf-8') as outfile:
+        writer = csv.writer(outfile, delimiter=delimiter, lineterminator='\n')
         for pair in extract_sentence_pairs(conversations):
             writer.writerow(pair)
 

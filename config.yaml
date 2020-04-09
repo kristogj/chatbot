@@ -1,0 +1,48 @@
+# Name of chatbot model
+model_name: 'cb_model'
+
+# Name of the corpus used
+corpus_name: "cornell movie-dialogs corpus"
+
+# Which score to use in the attention for the decoder
+attn_model: 'dot' # or general or concat
+
+# Size of the hidden layer for both encoder and decoder
+hidden_size: 500
+
+# Number of layers in Encoder
+encoder_n_layers:  2
+
+# Number of layers in Decoder
+decoder_n_layers:  2
+
+# Dropout percentage in decoder
+dropout:  0.1
+
+# Batch size during training
+batch_size: 64
+
+# Set checkpoint to load from; set to None if starting from scratch
+checkpoint_iter: 4000
+
+
+clip: 50.0
+
+teacher_forcing_ratio: 1.0
+
+learning_rate: 0.0001
+
+decoder_learning_ratio: 5.0
+
+n_iteration: 4000
+
+print_every: 1
+
+save_every: 500
+
+# VOCABULARY #
+# Maximum sentence length to consider
+max_length: 10
+
+# Minimum word count threshold for trimming
+min_count = 3

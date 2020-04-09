@@ -10,9 +10,6 @@ PAD_token = 0  # Used for padding short sentences
 SOS_token = 1  # Start-of-sentence token
 EOS_token = 2  # End of sentence token
 
-MAX_LENGTH = 10  # Maximum sentence length to consider
-MIN_COUNT = 3  # Minimum word count threshold for trimming
-
 
 class Vocabulary:
     """
@@ -77,13 +74,14 @@ class Vocabulary:
         for word in keep_words:
             self.add_word(word)
 
-    def trim_rare_words(self, pairs):
+    def trim_rare_words(self, pairs, min_count):
         """
         Trim words used under the MIN_COUNT from the Vocabulary
+        :param min_count: int
         :param pairs: list[list[str]]
         :return:
         """
-        self.trim(MIN_COUNT)
+        self.trim(min_count)
 
         # Filter out pairs with trimmed words
         keep_pairs = []
@@ -155,37 +153,39 @@ def read_vocabularies(datafile, corpus_name):
     return voc, pairs
 
 
-def filter_pair(pair):
+def filter_pair(pair, max_length):
     """
     Return True iff both sentences in pair are under the MAX_LENGTH threshold
-    :param pair:
-    :return:
+    :param max_length: int
+    :param pair: list[str]
+    :return: boolean
     """
     # Input sequences need to preserve the last word for EOS token
-    return len(pair[0].split(' ')) < MAX_LENGTH and len(pair[1].split(' ')) < MAX_LENGTH
+    return len(pair[0].split(' ')) < max_length and len(pair[1].split(' ')) < max_length
 
 
-def filter_pairs(pairs):
+def filter_pairs(pairs, max_length):
     """
     Filter pairs using filter_pair condition
     :param pairs: list[list[str]]
+    :param max_length: int
     :return: list[list[str]]
     """
-    return [pair for pair in pairs if filter_pair(pair)]
+    return [pair for pair in pairs if filter_pair(pair, max_length)]
 
 
-def load_prepare_data(corpus, corpus_name, datafile, save_dir):
+def load_prepare_data(datafile, config):
     """
     Using the functions defined above, return a populated Vocabulary object and pairs list
-    :param corpus_name:
-    :param datafile:
+    :param config: dict
+    :param datafile: str
     :return: Vocabulary, list[list[str]]
     """
     logging.info("Start preparing training data ...")
-    voc, pairs = read_vocabularies(datafile, corpus_name)
+    voc, pairs = read_vocabularies(datafile, config["corpus_name"])
 
     logging.info("Read {!s} sentence pairs".format(len(pairs)))
-    pairs = filter_pairs(pairs)
+    pairs = filter_pairs(pairs, config["max_length"])
 
     logging.info("Trimmed to {!s} sentence pairs".format(len(pairs)))
     logging.info("Counting words...")
@@ -195,7 +195,7 @@ def load_prepare_data(corpus, corpus_name, datafile, save_dir):
     logging.info("Counted words: {}".format(voc.num_words))
 
     logging.info("Trimming rare words")
-    pairs = voc.trim_rare_words(pairs)
+    pairs = voc.trim_rare_words(pairs, config["min_count"])
 
     return voc, pairs
 
@@ -258,7 +258,7 @@ def output_var(sentences, voc):
     :param voc: Vocabulary
     :return:
     """
-    # Convert each sentnce to index tokens
+    # Convert each sentence to index tokens
     indexes_batch = [indexes_from_sentence(voc, sentence) for sentence in sentences]
     max_target_len = max([len(indexes) for indexes in indexes_batch])
 
