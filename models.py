@@ -2,8 +2,7 @@ from torch import nn
 from torch.nn.utils.rnn import pack_padded_sequence, pad_packed_sequence
 import torch
 import torch.nn.functional as F
-
-from vocabulary import SOS_token
+from torch.distributions.categorical import Categorical
 
 
 class EncoderRNN(nn.Module):
@@ -102,23 +101,25 @@ class LuongAttentionDecoderRNN(nn.Module):
     outputs an EOS_token, representing the end of the sentence.
     """
 
-    def __init__(self, attn_model, embedding, hidden_size, output_size, n_layers=1, dropout=0.1):
+    def __init__(self, embedding, output_size, config):
         super(LuongAttentionDecoderRNN, self).__init__()
 
         # Keep for reference
-        self.attn_model = attn_model
-        self.hidden_size = hidden_size
+        self.config = config
+        self.attn_model = config["attn_model"]
+        self.hidden_size = config["hidden_size"]
         self.output_size = output_size
-        self.n_layers = n_layers
-        self.dropout = dropout
+        self.n_layers = config["decoder_n_layers"]
+        self.dropout = config["dropout"]
 
         # Define layers
         self.embedding = embedding
-        self.embedding_dropout = nn.Dropout(dropout)
-        self.gru = nn.GRU(hidden_size, hidden_size, n_layers, dropout=(0 if n_layers == 1 else dropout))
-        self.concat = nn.Linear(hidden_size * 2, hidden_size)
-        self.out = nn.Linear(hidden_size, output_size)
-        self.attn = Attention(attn_model, hidden_size)
+        self.embedding_dropout = nn.Dropout(self.dropout)
+        self.gru = nn.GRU(self.hidden_size, self.hidden_size, self.n_layers,
+                          dropout=(0 if self.n_layers == 1 else self.dropout))
+        self.concat = nn.Linear(self.hidden_size * 2, self.hidden_size)
+        self.out = nn.Linear(self.hidden_size, output_size)
+        self.attn = Attention(self.attn_model, self.hidden_size)
 
     def forward(self, input_step, last_hidden, encoder_outputs):
         # Note: we run this on step (word) at a time
@@ -143,6 +144,11 @@ class LuongAttentionDecoderRNN(nn.Module):
 
         # Predict next word using Luong eq. 6
         output = self.out(concat_output)
+
+        # Make choice of word more stochastic
+        if self.config["sampling"]:
+            output = output / self.config["temperature"]
+
         output = F.softmax(output, dim=1)
 
         # Return output and final hidden state
@@ -168,11 +174,11 @@ class GreedySearchDecoder(nn.Module):
     6. Return collections of word tokens and scores.
     """
 
-    def __init__(self, encoder, decoder, device):
+    def __init__(self, encoder, decoder, config):
         super(GreedySearchDecoder, self).__init__()
+        self.config = config
         self.encoder = encoder
         self.decoder = decoder
-        self.device = device
 
     def forward(self, input_seq, input_length, max_length):
         # Forward input through encoder model
@@ -182,11 +188,11 @@ class GreedySearchDecoder(nn.Module):
         decoder_hidden = encoder_hidden[:self.decoder.n_layers]
 
         # Initialize decoder input with SOS_token
-        decoder_input = torch.ones(1, 1, device=self.device, dtype=torch.long) * SOS_token
+        decoder_input = torch.ones(1, 1, device=self.config["device"], dtype=torch.long) * self.config["SOS_token"]
 
         # Initialize tensors to append decoded words to
-        all_tokens = torch.zeros([0], device=self.device, dtype=torch.long)
-        all_scores = torch.zeros([0], device=self.device)
+        all_tokens = torch.zeros([0], device=self.config["device"], dtype=torch.long)
+        all_scores = torch.zeros([0], device=self.config["device"])
 
         # Iteratively decode one word token at a time
         for _ in range(max_length):
@@ -194,7 +200,11 @@ class GreedySearchDecoder(nn.Module):
             decoder_output, decoder_hidden = self.decoder(decoder_input, decoder_hidden, encoder_outputs)
 
             # Obtain most likely word token and its softmax score
-            decoder_scores, decoder_input = torch.max(decoder_output, dim=1)
+            if self.config["sampling"]:
+                decoder_input = Categorical(decoder_output).sample()
+                decoder_scores, _ = torch.max(decoder_output, dim=1)
+            else:
+                decoder_scores, decoder_input = torch.max(decoder_output, dim=1)
 
             # Record token and score
             all_tokens = torch.cat((all_tokens, decoder_input), dim=0)

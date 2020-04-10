@@ -5,11 +5,6 @@ import re
 import itertools
 import torch
 
-# Default word tokens
-PAD_token = 0  # Used for padding short sentences
-SOS_token = 1  # Start-of-sentence token
-EOS_token = 2  # End of sentence token
-
 
 class Vocabulary:
     """
@@ -18,12 +13,13 @@ class Vocabulary:
     vocabulary, adding all words in a sentence and trimming infrequently seen words.
     """
 
-    def __init__(self, name):
-        self.name = name
+    def __init__(self, config):
+        self.PAD_token, self.EOS_token, self.SOS_token = config["PAD_token"], config["EOS_token"], config["SOS_token"]
+        self.name = config["corpus_name"]
         self.trimmed = False
         self.word_to_index = {}
-        self.word_to_count = defaultdict(lambda: 0)
-        self.index_to_word = {PAD_token: "PAD", SOS_token: "SOS", EOS_token: "EOS"}
+        self.word_to_count = defaultdict(int)
+        self.index_to_word = {self.PAD_token: "PAD", self.SOS_token: "SOS", self.EOS_token: "EOS"}
         self.num_words = 3  # Initialised with PAD, SOS, EOS
 
     def add_sentence(self, sentence):
@@ -67,8 +63,8 @@ class Vocabulary:
 
         # Reinitialize dictionaries
         self.word_to_index = {}
-        self.word_to_count = defaultdict(lambda: 0)
-        self.index_to_word = {PAD_token: "PAD", SOS_token: "SOS", EOS_token: "EOS"}
+        self.word_to_count = defaultdict(int)
+        self.index_to_word = {self.PAD_token: "PAD", self.SOS_token: "SOS", self.EOS_token: "EOS"}
         self.num_words = 3  # Count default tokens
 
         for word in keep_words:
@@ -135,11 +131,11 @@ def normalize_string(sent):
     return sent
 
 
-def read_vocabularies(datafile, corpus_name):
+def read_vocabularies(datafile, config):
     """
     Read question-answer pairs and return a Vocabulary object.
     :param datafile: str
-    :param corpus_name: str
+    :param config: dict
     :return:
     """
     logging.info("Reading lines...")
@@ -149,7 +145,7 @@ def read_vocabularies(datafile, corpus_name):
 
     # Split every line into pairs and normalize
     pairs = [[normalize_string(sent) for sent in line.split("~")] for line in lines]
-    voc = Vocabulary(corpus_name)
+    voc = Vocabulary(config)
     return voc, pairs
 
 
@@ -182,7 +178,7 @@ def load_prepare_data(datafile, config):
     :return: Vocabulary, list[list[str]]
     """
     logging.info("Start preparing training data ...")
-    voc, pairs = read_vocabularies(datafile, config["corpus_name"])
+    voc, pairs = read_vocabularies(datafile, config)
 
     logging.info("Read {!s} sentence pairs".format(len(pairs)))
     pairs = filter_pairs(pairs, config["max_length"])
@@ -207,10 +203,10 @@ def indexes_from_sentence(voc, sentence):
     :param sentence: str
     :return:
     """
-    return [voc.word_to_index[word] for word in sentence.split(" ")] + [EOS_token]
+    return [voc.word_to_index[word] for word in sentence.split(" ")] + [voc.EOS_token]
 
 
-def zero_padding(indexes_batch, fill_value=PAD_token):
+def zero_padding(indexes_batch, fill_value):
     """
     Zero pad all sentences who is shorter than the longest sentence.
     A batch consists of several sentences which are converted to indexes.
@@ -221,7 +217,7 @@ def zero_padding(indexes_batch, fill_value=PAD_token):
     return list(itertools.zip_longest(*indexes_batch, fillvalue=fill_value))
 
 
-def binary_matrix(padded_sentences, value=PAD_token):
+def binary_matrix(padded_sentences, value):
     """
     Convert the padded sentences into a binary matrix where it is 0 if it is equal value,
     and 1 else.
@@ -246,7 +242,7 @@ def input_var(sentences, voc):
     lengths = torch.tensor([len(indexes) for indexes in indexes_batch])
 
     # Add zero padding to sentences
-    pad_list = zero_padding(indexes_batch)
+    pad_list = zero_padding(indexes_batch, voc.PAD_token)
     pad_var = torch.LongTensor(pad_list)
     return pad_var, lengths
 
@@ -263,9 +259,9 @@ def output_var(sentences, voc):
     max_target_len = max([len(indexes) for indexes in indexes_batch])
 
     # Zero pad each sentence
-    pad_list = zero_padding(indexes_batch)
+    pad_list = zero_padding(indexes_batch, voc.PAD_token)
 
-    mask = binary_matrix(pad_list)
+    mask = binary_matrix(pad_list, voc.PAD_token)
     mask = torch.BoolTensor(mask)
     pad_var = torch.LongTensor(pad_list)
     return pad_var, mask, max_target_len

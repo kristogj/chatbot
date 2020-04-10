@@ -1,4 +1,3 @@
-from vocabulary import SOS_token
 from objective import mask_nll_loss
 from vocabulary import batch_to_training_data
 from plotting import generate_plot
@@ -33,7 +32,7 @@ def train(training_batch, encoder, decoder, encoder_optimizer, decoder_optimizer
     encoder_outputs, encoder_hidden = encoder(input_variable, lengths)
 
     # Create initial decoder input (start with SOS tokens for each sentence)
-    decoder_input = torch.LongTensor([[SOS_token for _ in range(config["batch_size"])]])
+    decoder_input = torch.LongTensor([[config["SOS_token"] for _ in range(config["batch_size"])]])
     decoder_input = decoder_input.to(config["device"])
 
     # Set initial decoder hidden state to the encode's final hidden state
@@ -126,7 +125,7 @@ def train_iterations(voc, pairs, encoder, decoder, encoder_optimizer, decoder_op
                 'en_opt': encoder_optimizer.state_dict(),
                 'de_opt': decoder_optimizer.state_dict(),
                 'loss': loss,
-                'voc_dict': voc,  # TODO: Fix saving of vocabulary
+                'voc_dict': voc.__dict__,
                 'embedding': decoder.embedding.state_dict()
             }, os.path.join(config["directory"], '{}_{}.tar'.format(iteration, 'checkpoint')))
 

@@ -71,4 +71,4 @@ def evaluate_input(searcher, voc, config):
             print('Bot:', ' '.join(output_words))
 
         except KeyError:
-            logging.error("Error: Encountered unknown word.")
+            print('Bot: hmm... i am not sure I can help you with that.')

@@ -48,8 +48,7 @@ def load_encoder_decoder(voc, checkpoint, configs):
 
     # Initialize encoder & decoder models
     encoder = EncoderRNN(configs["hidden_size"], embedding, configs["encoder_n_layers"], configs["dropout"])
-    decoder = LuongAttentionDecoderRNN(configs["attn_model"], embedding, configs["hidden_size"], voc.num_words,
-                                       configs["decoder_n_layers"], configs["dropout"])
+    decoder = LuongAttentionDecoderRNN(embedding, voc.num_words, configs)
 
     if checkpoint:
         voc.__dict__ = checkpoint['voc_dict']

@@ -49,7 +49,7 @@ if __name__ == '__main__':
     # Load
     encoder, decoder = load_encoder_decoder(voc, checkpoint, config)
 
-    # If you want to train the model, run the training loop
+    # If you want to train the model, run the training loop. Uncomment next two lines.
     encoder_optimizer, decoder_optimizer = load_optimizers(encoder, decoder, checkpoint, config)
     train_iterations(voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer, checkpoint, config)
 
@@ -58,7 +58,7 @@ if __name__ == '__main__':
     decoder.eval()
 
     # Initialize search module
-    searcher = GreedySearchDecoder(encoder, decoder, config["device"])
+    searcher = GreedySearchDecoder(encoder, decoder, config)
 
     # Start chat
     evaluate_input(searcher, voc, config)

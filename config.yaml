@@ -1,3 +1,16 @@
+################## Vocabulary ##################
+# Default word tokens for vocabulary
+PAD_token: 0  # Used for padding short sentences
+SOS_token: 1  # Start-of-sentence token
+EOS_token: 2  # End of sentence token
+
+# Maximum sentence length to consider in the vocabulary
+max_length: 10
+
+# Minimum word count threshold for trimming in the vocabulary
+min_count:  3
+
+################## Model ##################
 # Name of chatbot model
 model_name: 'cb_model'
 
@@ -19,11 +32,18 @@ decoder_n_layers:  2
 # Dropout percentage in decoder
 dropout:  0.1
 
+# Sampling
+sampling: False # TURN FALSE WHILE TRAINING
+
+# Sampling temperature used in decoder
+temperature: 1.2
+
+################## Training ##################
 # Batch size during training
 batch_size: 64
 
 # Set checkpoint to load from; set to None if starting from scratch
-checkpoint_iter: 4000
+checkpoint_iter: 20
 
 # Clip gradients
 clip: 50.0
@@ -38,16 +58,12 @@ learning_rate: 0.0001
 decoder_learning_ratio: 5.0
 
 # Number of epochs of training
-n_iteration: 4000
+n_iteration: 4001
 
 # Print average loss every x epoch
 print_every: 100
 
 # Save model every x epoch
-save_every: 5000
+save_every: 500
 
-# Maximum sentence length to consider in the vocabulary
-max_length: 10
 
-# Minimum word count threshold for trimming in the vocabulary
-min_count:  3
