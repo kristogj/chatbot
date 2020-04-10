@@ -1,5 +1,12 @@
 # Chatbot using Recurrent Neural Networks with Attention
 
+## Setup
+You need to have PyTorch installed. Run main to try out the model. If you would like to train 
+it, remove the comments in line 55 and 56 and edit config.yaml 'checkpoint_iter' to 0. You
+will find all different kind of settings there. Download the pre-trained model from 
+[here](https://drive.google.com/open?id=1Ww2c62fRhunuddXHoFz86oHdVydyTk5C). Easiest thing would be tp just 
+copy the whole folder structure, and add it to the data folder together with the dataset. 
+
 ## Dataset
 The [Cornell Movie-Dialog Corpus](https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html)
 is a rich dataset of movie character dialog:
@@ -102,9 +109,13 @@ Bot: not for you ? ? ? <br />
 
 Bot: wait ! . . .
 
-
-
 ## References
-* Oriol Vinyals and Quoc V. Le. A neural conversational model.CoRR, abs/1506.05869, 2015.
-* Minh-Thang Luong, Hieu Pham, and Christopher D. Manning. Effective approaches to attention-based neural machine 
-translation.CoRR, abs/1508.04025, 2015.
+* Inkawhich Matthew. Chatbot tutorial. https://pytorch.org/tutorials/beginner/chatbot_ tutorial.html. [Online; accessed 10-April-2020].
+* Oriol Vinyals and Quoc V. Le. A neural conversational model. CoRR, abs/1506.05869, 2015.
+* Minh-Thang Luong, Hieu Pham, and Christopher D. Manning. Effective approaches to attention-based
+neural machine translation. CoRR, abs/1508.04025, 2015.
+* Cristian Danescu-Niculescu-Mizil and Lillian Lee. Chameleons in imagined conversations: A new approach
+to understanding coordination of linguistic style in dialogs. In Proceedings of the Workshop on Cognitive
+Modeling and Computational Linguistics, ACL 2011, 2011.
+* Ilya Sutskever, Oriol Vinyals, and Quoc V. Le. Sequence to sequence learning with neural networks. CoRR,
+abs/1409.3215, 2014.
