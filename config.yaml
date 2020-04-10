@@ -33,17 +33,17 @@ decoder_n_layers:  2
 dropout:  0.1
 
 # Sampling
-sampling: False # TURN FALSE WHILE TRAINING
+sampling: True # TURN FALSE WHILE TRAINING
 
 # Sampling temperature used in decoder
-temperature: 1.2
+temperature: 0.7
 
 ################## Training ##################
 # Batch size during training
 batch_size: 64
 
 # Set checkpoint to load from; set to None if starting from scratch
-checkpoint_iter: 20
+checkpoint_iter: 4000
 
 # Clip gradients
 clip: 50.0

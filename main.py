@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 
 import torch
 import os
+import logging
 
 # Custom
 from data import create_formatted_file
@@ -41,6 +42,7 @@ if __name__ == '__main__':
 
     checkpoint = None
     if os.path.isfile(config["load_filename"]):
+        logging.info("Loaded checkpoint: {}".format(config["load_filename"]))
         # If loading on same machine the model was trained on
         checkpoint = torch.load(config["load_filename"])
         # If loading a model trained on GPU to CPU
@@ -50,8 +52,8 @@ if __name__ == '__main__':
     encoder, decoder = load_encoder_decoder(voc, checkpoint, config)
 
     # If you want to train the model, run the training loop. Uncomment next two lines.
-    encoder_optimizer, decoder_optimizer = load_optimizers(encoder, decoder, checkpoint, config)
-    train_iterations(voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer, checkpoint, config)
+    # encoder_optimizer, decoder_optimizer = load_optimizers(encoder, decoder, checkpoint, config)
+    # train_iterations(voc, pairs, encoder, decoder, encoder_optimizer, decoder_optimizer, checkpoint, config)
 
     # Now we can chat with the model. Set dropout layers to eval mode.
     encoder.eval()
