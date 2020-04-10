@@ -4,8 +4,8 @@
 You need to have PyTorch installed. Run main to try out the model. If you would like to train 
 it, remove the comments in line 55 and 56 and edit config.yaml 'checkpoint_iter' to 0. You
 will find all different kind of settings there. Download the pre-trained model from 
-[here](https://drive.google.com/open?id=1Ww2c62fRhunuddXHoFz86oHdVydyTk5C). Easiest thing would be tp just 
-copy the whole folder structure, and add it to the data folder together with the dataset. 
+[here](https://drive.google.com/open?id=1Ww2c62fRhunuddXHoFz86oHdVydyTk5C). Easiest thing would be to just 
+copy it and add it with the readme file in the data/save folder
 
 ## Dataset
 The [Cornell Movie-Dialog Corpus](https://www.cs.cornell.edu/~cristian/Cornell_Movie-Dialogs_Corpus.html)
